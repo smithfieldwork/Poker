@@ -1,0 +1,43 @@
+.table {
+  position: absolute;
+  width: 50%;
+  height: 60%;
+  background-color: rgb(8, 215, 43);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#players {
+  display: flex; /* Add flex display to the table container */
+  justify-content: space-between; /* Adjust as needed for spacing */
+}
+
+.cardImages {
+  height: 60px;
+}
+
+.player--1 {
+  width: 100px;
+}
+
+.player--2 {
+  width: 100px;
+}
+
+#community-cards {
+  display: flex; /* Add flex display to the table container */
+  justify-content: space-around;
+}
+
+#betting-buttons {
+  margin-top: 120px;
+  display: flex;
+  justify-content: space-around;
+}
+
+#deal-button {
+  position: absolute;
+  bottom: 10px; /* Adjust as needed to control vertical position */
+  right: 10px; /* Adjust as needed to control horizontal position */
+}
