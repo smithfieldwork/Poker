@@ -41,3 +41,7 @@
   bottom: 10px; /* Adjust as needed to control vertical position */
   right: 10px; /* Adjust as needed to control horizontal position */
 }
+
+.hidden {
+  display: none;
+}

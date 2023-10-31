@@ -1,0 +1,11 @@
+New Game fun
+New Hand fun
+Player to act var
+Call  fun
+Switch Player to act fun
+check fun
+player1 local pot
+player2 local pot
+finishRoundCheck
+Deal commmunitycards fun
+communityCardsDealt var
