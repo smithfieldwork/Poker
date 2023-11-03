@@ -24,14 +24,39 @@ const player1Hand = new Array(4);
 const player2Hand = new Array(4);
 const communityCards = new Array(5);
 
-let dealer = [true, false];
-let toAct = [false, true];
-let player1Status = "big--blind";
-let player2Status = "small--blind";
-let player1Action = "";
-let player2Action = "";
-let statusOfPlay = "raise";
 
+//change to Javascript objects
+const player1 = {
+  dealing: true,
+  toAct: false,
+  status: "big--blind",
+  roundBet: 0,
+  latestBest: 0,
+  balance: 3000
+};
+
+const player2 = {
+  dealing: false,
+  toAct:true,
+  status: "small-blind",
+  roundBet: 0,
+  latestBet: 0,
+  balance: 3000
+  
+};
+
+let pot = 0;
+
+function changeToAct() {
+  if (toAct[0] === false) {
+    toAct[0] = true;
+    toAct[1] = false;
+  } else if (toAct[0] === true) {
+    toAct[0] = false;
+    toAct[1] = true;
+  }
+}
+//redo with javascript function
 function showDealer() {
   if (dealer[0] === true) {
     player1Dealing.innerHTML = "Dealing";
@@ -64,8 +89,52 @@ btnNewGame.addEventListener("click", function () {
   postBigBlind(player1balance);
   postSmallBlind(player2balance);
   setCardImages();
-  showFlop();
+  betAmount = 25;
+
+  //while (!checkHandOver)
+  //if toAct===player2;
+  //playerAction(player2);
+  //playerAction(player1);
+
+  //showflop()
+  //while (!checkHandOver)
+  //if toAct===player2;
+  //playerAction(player2);
+  //playerAction(player1);
+
+  //showturn
+  //...
+
+  //show river
+  //...
+
+  //need to build local pot and genreal pot
 });
+
+function playerAction(playerActing, playerNotActing) {
+  //call button
+  btnCall.addEventListener("click", function () {
+  playerActing.latestBet = playerNotActing.latestBet;
+
+  playerActing.roundBet += playerActing.latestBet;
+  playerActing.status = "call";
+  playerActing.toAct= false;
+  playerNotActing.toAct = true;
+
+pot += playerActing.latestBet;
+ }
+  )
+
+  btnCheck.addEventListener("click", function () {
+  playerActing.toAct=false;
+  playerNotActing.toAct = true;
+  playerActing.status = "check";
+  //checkbutton
+  //raisebutton
+  // need an input box for amount
+  //need to check functionaility of these buttons next
+  //foldbutton
+}
 
 function showFlop() {
   communityCard1.classList.remove("hidden");
