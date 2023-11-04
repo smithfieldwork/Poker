@@ -19,57 +19,59 @@ const player1Dealing = document.getElementById("player--1--dealing");
 const player2Dealing = document.getElementById("player--2--dealing");
 const player1balance = document.getElementById("player--1--balance");
 const player2balance = document.getElementById("player--2--balance");
+const player1RoundTotal = document.getElementById("player--1--round--total");
+const player2RoundTotal = document.getElementById("player--2--round--total");
 
-const player1Hand = new Array(4);
-const player2Hand = new Array(4);
-const communityCards = new Array(5);
-
-
-//change to Javascript objects
 const player1 = {
   dealing: true,
   toAct: false,
   status: "big--blind",
   roundBet: 0,
   latestBest: 0,
-  balance: 3000
+  balance: 3000,
+  hand: new Array(4),
 };
 
 const player2 = {
   dealing: false,
-  toAct:true,
+  toAct: true,
   status: "small-blind",
   roundBet: 0,
   latestBet: 0,
-  balance: 3000
-  
+  balance: 3000,
+  hand: new Array(4),
 };
 
-let pot = 0;
+let betAmount = 0;
+const communityCards = new Array(5);
+let playerActing = player2;
+let playerNotActing = player1;
 
+//change to Javascript objects
+
+let pot = 0;
+//reduntant function now or else update with js object
 function changeToAct() {
-  if (toAct[0] === false) {
-    toAct[0] = true;
-    toAct[1] = false;
-  } else if (toAct[0] === true) {
-    toAct[0] = false;
-    toAct[1] = true;
+  if (playerActing === player1) {
+    playerActing = player2;
+  } else if (playerActing === player2) {
+    playerActing = player1;
   }
 }
 //redo with javascript function
 function showDealer() {
-  if (dealer[0] === true) {
+  if (player1.dealing) {
     player1Dealing.innerHTML = "Dealing";
     player2Dealing.innerHTML = "<br>";
 
-    dealer[0] = false;
-    dealer[1] = true;
-  } else if (dealer[1] === true) {
+    player1.dealing = false;
+    player2.dealing = true;
+  } else if (player2.dealing) {
     player1Dealing.innerHTML = "<br>";
     player2Dealing.innerHTML = "Dealing";
 
-    dealer[0] = true;
-    dealer[1] = false;
+    player1.dealing = true;
+    player2.dealing = false;
   }
 }
 
@@ -82,8 +84,8 @@ function postSmallBlind(playerBalance) {
 }
 
 btnNewGame.addEventListener("click", function () {
-  dealPlayerHand(player1Hand);
-  dealPlayerHand(player2Hand);
+  dealPlayerHand(player1.hand);
+  dealPlayerHand(player2.hand);
   dealCommunityCards();
   showDealer();
   postBigBlind(player1balance);
@@ -91,10 +93,7 @@ btnNewGame.addEventListener("click", function () {
   setCardImages();
   betAmount = 25;
 
-  //while (!checkHandOver)
   //if toAct===player2;
-  //playerAction(player2);
-  //playerAction(player1);
 
   //showflop()
   //while (!checkHandOver)
@@ -107,33 +106,65 @@ btnNewGame.addEventListener("click", function () {
 
   //show river
   //...
-
-  //need to build local pot and genreal pot
 });
 
-function playerAction(playerActing, playerNotActing) {
-  //call button
-  btnCall.addEventListener("click", function () {
-  playerActing.latestBet = playerNotActing.latestBet;
+function handleRaise(betAmount) {
+  playerActing.latestBet = betAmount;
+  playerActing.roundBet += betAmount;
+  playerActing.balance -= betAmount;
+  playerActing.status = "raise";
+}
 
+//call button
+btnCall.addEventListener("click", function () {
+  playerActing.latestBet = playerNotActing.latestBet;
   playerActing.roundBet += playerActing.latestBet;
   playerActing.status = "call";
-  playerActing.toAct= false;
+  playerActing.toAct = false;
   playerNotActing.toAct = true;
 
-pot += playerActing.latestBet;
- }
-  )
+  pot += playerActing.latestBet + playerNotActing.latestBet;
+  changeToAct();
+});
 
-  btnCheck.addEventListener("click", function () {
-  playerActing.toAct=false;
-  playerNotActing.toAct = true;
+btnCheck.addEventListener("click", function () {
   playerActing.status = "check";
-  //checkbutton
-  //raisebutton
-  // need an input box for amount
+  changeToAct();
+
   //need to check functionaility of these buttons next
   //foldbutton
+});
+
+btnRaise.addEventListener("click", function () {
+  const raiseAmountPlayer1 = parseInt(
+    document.getElementById("bet--input--player1").value
+  );
+  const raiseAmountPlayer2 = parseInt(
+    document.getElementById("bet--input--player2").value
+  );
+  if (playerActing === player1) {
+    handleRaise(raiseAmountPlayer1);
+    player1balance.innerHTML = playerActing.balance;
+    player1RoundTotal.innerHTML = playerActing.roundBet;
+  } else if (playerActing === player2) {
+    handleRaise(raiseAmountPlayer2);
+    player2balance.innerHTML = playerActing.balance;
+    player2RoundTotal.innerHTML = playerActing.roundBet;
+  }
+  changeToAct();
+});
+
+btnFold.addEventListener("click", function () {
+  playerActing.status = "fold";
+  //newHand()
+});
+
+function checkRoundOver() {
+  let roundOver = false;
+  if (player1.status != "raise" && player2.status != "raise") {
+    roundOver = true;
+  }
+  return roundOver;
 }
 
 function showFlop() {
@@ -170,8 +201,8 @@ function dealCommunityCards() {
   communityCards[4] = getRandomInt(0, 51);
 }
 function setCardImages() {
-  player1Card1.src = `Deck of Cards/${player1Hand[0]}.png`;
-  player1Card2.src = `Deck of Cards/${player1Hand[1]}.png`;
+  player1Card1.src = `Deck of Cards/${player1.hand[0]}.png`;
+  player1Card2.src = `Deck of Cards/${player1.hand[1]}.png`;
   player2Card1.src = `Deck of Cards/backofcard.png`;
   player2Card2.src = `Deck of Cards/backofcard.png`;
   communityCard1.src = `Deck of Cards/${communityCards[0]}.png`;
