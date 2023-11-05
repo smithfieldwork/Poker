@@ -9,6 +9,7 @@ const communityCard2 = document.getElementById("communityCard--2");
 const communityCard3 = document.getElementById("communityCard--3");
 const communityCard4 = document.getElementById("communityCard--4");
 const communityCard5 = document.getElementById("communityCard--5");
+const communityCardsClass = document.getElementById("community--cards");
 const btnNewHand = document.getElementById("new-hand-button");
 const btnNewGame = document.getElementById("new-game-button");
 const btnRaise = document.getElementById("raise-button");
@@ -21,11 +22,13 @@ const player1balance = document.getElementById("player--1--balance");
 const player2balance = document.getElementById("player--2--balance");
 const player1RoundTotal = document.getElementById("player--1--round--total");
 const player2RoundTotal = document.getElementById("player--2--round--total");
+const player1RoundStatus = document.getElementById("player--1--round--status");
+const player2RoundStatus = document.getElementById("player--2--round--status");
 
 const player1 = {
   dealing: true,
   toAct: false,
-  status: "big--blind",
+  status: "raise",
   roundBet: 0,
   latestBest: 0,
   balance: 3000,
@@ -35,7 +38,7 @@ const player1 = {
 const player2 = {
   dealing: false,
   toAct: true,
-  status: "small-blind",
+  status: "raise",
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
@@ -48,14 +51,17 @@ let playerActing = player2;
 let playerNotActing = player1;
 
 //change to Javascript objects
-
+let communityCardsShown = 0;
+let playerRoundStatus = player2RoundStatus;
 let pot = 0;
 //reduntant function now or else update with js object
 function changeToAct() {
   if (playerActing === player1) {
     playerActing = player2;
+    playerRoundStatus = player2RoundStatus;
   } else if (playerActing === player2) {
     playerActing = player1;
+    playerRoundStatus = player1RoundStatus;
   }
 }
 //redo with javascript function
@@ -83,16 +89,20 @@ function postSmallBlind(playerBalance) {
   playerBalance.innerHTML -= 25;
 }
 
-btnNewGame.addEventListener("click", function () {
+function newHand() {
   dealPlayerHand(player1.hand);
   dealPlayerHand(player2.hand);
   dealCommunityCards();
+  hideCommunityCards();
   showDealer();
   postBigBlind(player1balance);
   postSmallBlind(player2balance);
   setCardImages();
   betAmount = 25;
+}
 
+btnNewHand.addEventListener("click", function () {
+  newHand();
   //if toAct===player2;
 
   //showflop()
@@ -107,12 +117,30 @@ btnNewGame.addEventListener("click", function () {
   //show river
   //...
 });
-
+function updatePlayerRoundStatus(status) {
+  playerRoundStatus.innerHTML = status;
+}
 function handleRaise(betAmount) {
-  playerActing.latestBet = betAmount;
-  playerActing.roundBet += betAmount;
-  playerActing.balance -= betAmount;
+  playerActing.latestBet = betAmount + playerNotActing.latestBet;
+  playerNotActing.latestBet = 0;
+  playerActing.roundBet += playerActing.latestBet;
+  playerActing.balance -= player1Acting.latestBet;
   playerActing.status = "raise";
+}
+
+function showCommunityCards() {
+  if (checkRoundOver() && communityCardsShown === 0) {
+    showFlop();
+  } else if (checkRoundOver() && communityCardsShown === 3) {
+    showTurnCard();
+  } else if (checkRoundOver() && communityCardsShown === 4) {
+    showRiverCard();
+  }
+}
+//change the raise condition in check hand is over to "wait" as well
+function resetPlayerStatus() {
+  playerActing.status = "raise";
+  playerNotActing.status = "raise";
 }
 
 //call button
@@ -124,13 +152,18 @@ btnCall.addEventListener("click", function () {
   playerNotActing.toAct = true;
 
   pot += playerActing.latestBet + playerNotActing.latestBet;
+  updatePlayerRoundStatus("Call");
   changeToAct();
 });
 
 btnCheck.addEventListener("click", function () {
+  console.log(checkRoundOver());
   playerActing.status = "check";
+  updatePlayerRoundStatus("Check");
+  showCommunityCards();
   changeToAct();
-
+  console.log(checkRoundOver());
+  console.log(communityCardsShown);
   //need to check functionaility of these buttons next
   //foldbutton
 });
@@ -151,13 +184,24 @@ btnRaise.addEventListener("click", function () {
     player2balance.innerHTML = playerActing.balance;
     player2RoundTotal.innerHTML = playerActing.roundBet;
   }
+  updatePlayerRoundStatus("Raise");
   changeToAct();
 });
 
 btnFold.addEventListener("click", function () {
   playerActing.status = "fold";
-  //newHand()
+  newHand();
 });
+
+function checkRoundOver() {
+  let roundOver = false;
+  if (player1.status != "raise" && player2.status != "raise") {
+    roundOver = true;
+  }
+  return roundOver;
+}
+
+function showFlop() {}
 
 function checkRoundOver() {
   let roundOver = false;
@@ -171,13 +215,67 @@ function showFlop() {
   communityCard1.classList.remove("hidden");
   communityCard2.classList.remove("hidden");
   communityCard3.classList.remove("hidden");
+  communityCardsShown = 3;
+  resetPlayerStatus();
 }
 function showTurnCard() {
   communityCard4.classList.remove("hidden");
+  communityCardsShown = 4;
+  resetPlayerStatus();
 }
 
 function showRiverCard() {
   communityCard5.classList.remove("hidden");
+  communityCardsShown = 5;
+  resetPlayerStatus();
+}
+
+function hideCommunityCards() {
+  communityCardsClass.classList.add("hidden");
+}
+
+btnNewHand.addEventListener("click", function () {});
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function dealPlayerHand(playerArray) {
+  playerArray[0] = getRandomInt(0, 51);
+  playerArray[1] = getRandomInt(0, 51);
+}
+
+function dealCommunityCards() {
+  communityCards[0] = getRandomInt(0, 51);
+  communityCards[1] = getRandomInt(0, 51);
+  communityCards[2] = getRandomInt(0, 51);
+  communityCards[3] = getRandomInt(0, 51);
+  communityCards[4] = getRandomInt(0, 51);
+}
+function showFlop() {
+  communityCardsClass.classList.remove("hidden");
+  communityCard1.classList.remove("hidden");
+  communityCard2.classList.remove("hidden");
+  communityCard3.classList.remove("hidden");
+  communityCardsShown = 3;
+  resetPlayerStatus();
+}
+function showTurnCard() {
+  communityCard4.classList.remove("hidden");
+  communityCardsShown = 4;
+  resetPlayerStatus();
+}
+
+function showRiverCard() {
+  communityCard5.classList.remove("hidden");
+  communityCardsShown = 5;
+  resetPlayerStatus();
+}
+
+function hideCommunityCards() {
+  communityCardsClass.classList.add("hidden");
 }
 
 btnNewHand.addEventListener("click", function () {});
