@@ -20,6 +20,8 @@ const player1Dealing = document.getElementById("player--1--dealing");
 const player2Dealing = document.getElementById("player--2--dealing");
 const player1balance = document.getElementById("player--1--balance");
 const player2balance = document.getElementById("player--2--balance");
+const player1LatestBet = document.getElementById("player--1--latest--bet");
+const player2LatestBet = document.getElementById("player--2--latest--bet");
 const player1RoundTotal = document.getElementById("player--1--round--total");
 const player2RoundTotal = document.getElementById("player--2--round--total");
 const player1RoundStatus = document.getElementById("player--1--round--status");
@@ -30,7 +32,7 @@ const player1 = {
   toAct: false,
   status: "raise",
   roundBet: 0,
-  latestBest: 0,
+  latestBet: 0,
   balance: 3000,
   hand: new Array(4),
 };
@@ -49,7 +51,7 @@ let betAmount = 0;
 const communityCards = new Array(5);
 let playerActing = player2;
 let playerNotActing = player1;
-
+console.log(player1.latestBet);
 //change to Javascript objects
 let communityCardsShown = 0;
 let playerRoundStatus = player2RoundStatus;
@@ -58,9 +60,11 @@ let pot = 0;
 function changeToAct() {
   if (playerActing === player1) {
     playerActing = player2;
+    playerNotActing = player1;
     playerRoundStatus = player2RoundStatus;
   } else if (playerActing === player2) {
     playerActing = player1;
+    playerNotActing = player2;
     playerRoundStatus = player1RoundStatus;
   }
 }
@@ -103,29 +107,9 @@ function newHand() {
 
 btnNewHand.addEventListener("click", function () {
   newHand();
-  //if toAct===player2;
-
-  //showflop()
-  //while (!checkHandOver)
-  //if toAct===player2;
-  //playerAction(player2);
-  //playerAction(player1);
-
-  //showturn
-  //...
-
-  //show river
-  //...
 });
 function updatePlayerRoundStatus(status) {
   playerRoundStatus.innerHTML = status;
-}
-function handleRaise(betAmount) {
-  playerActing.latestBet = betAmount + playerNotActing.latestBet;
-  playerNotActing.latestBet = 0;
-  playerActing.roundBet += playerActing.latestBet;
-  playerActing.balance -= player1Acting.latestBet;
-  playerActing.status = "raise";
 }
 
 function showCommunityCards() {
@@ -168,6 +152,13 @@ btnCheck.addEventListener("click", function () {
   //foldbutton
 });
 
+function handleRaise(betAmount) {
+  playerActing.latestBet = betAmount;
+  playerActing.roundBet = betAmount + playerNotActing.roundBet;
+  playerActing.balance -= betAmount + playerNotActing.latestBet;
+  playerActing.status = "raise";
+}
+
 btnRaise.addEventListener("click", function () {
   const raiseAmountPlayer1 = parseInt(
     document.getElementById("bet--input--player1").value
@@ -177,12 +168,14 @@ btnRaise.addEventListener("click", function () {
   );
   if (playerActing === player1) {
     handleRaise(raiseAmountPlayer1);
-    player1balance.innerHTML = playerActing.balance;
-    player1RoundTotal.innerHTML = playerActing.roundBet;
+    player1balance.textContent = playerActing.balance;
+    player1RoundTotal.textContent = playerActing.roundBet;
+    player1LatestBet.textContent = playerActing.latestBet;
   } else if (playerActing === player2) {
     handleRaise(raiseAmountPlayer2);
-    player2balance.innerHTML = playerActing.balance;
-    player2RoundTotal.innerHTML = playerActing.roundBet;
+    player2balance.textContent = playerActing.balance;
+    player2RoundTotal.textContent = playerActing.roundBet;
+    player2LatestBet.textContent = playerActing.latestBet;
   }
   updatePlayerRoundStatus("Raise");
   changeToAct();
@@ -201,59 +194,6 @@ function checkRoundOver() {
   return roundOver;
 }
 
-function showFlop() {}
-
-function checkRoundOver() {
-  let roundOver = false;
-  if (player1.status != "raise" && player2.status != "raise") {
-    roundOver = true;
-  }
-  return roundOver;
-}
-
-function showFlop() {
-  communityCard1.classList.remove("hidden");
-  communityCard2.classList.remove("hidden");
-  communityCard3.classList.remove("hidden");
-  communityCardsShown = 3;
-  resetPlayerStatus();
-}
-function showTurnCard() {
-  communityCard4.classList.remove("hidden");
-  communityCardsShown = 4;
-  resetPlayerStatus();
-}
-
-function showRiverCard() {
-  communityCard5.classList.remove("hidden");
-  communityCardsShown = 5;
-  resetPlayerStatus();
-}
-
-function hideCommunityCards() {
-  communityCardsClass.classList.add("hidden");
-}
-
-btnNewHand.addEventListener("click", function () {});
-
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function dealPlayerHand(playerArray) {
-  playerArray[0] = getRandomInt(0, 51);
-  playerArray[1] = getRandomInt(0, 51);
-}
-
-function dealCommunityCards() {
-  communityCards[0] = getRandomInt(0, 51);
-  communityCards[1] = getRandomInt(0, 51);
-  communityCards[2] = getRandomInt(0, 51);
-  communityCards[3] = getRandomInt(0, 51);
-  communityCards[4] = getRandomInt(0, 51);
-}
 function showFlop() {
   communityCardsClass.classList.remove("hidden");
   communityCard1.classList.remove("hidden");
@@ -278,7 +218,9 @@ function hideCommunityCards() {
   communityCardsClass.classList.add("hidden");
 }
 
-btnNewHand.addEventListener("click", function () {});
+btnNewHand.addEventListener("click", function () {
+  newHand();
+});
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
