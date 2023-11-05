@@ -30,7 +30,7 @@ const player2RoundStatus = document.getElementById("player--2--round--status");
 const player1 = {
   dealing: true,
   toAct: false,
-  status: "raise",
+  status: "Raise",
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
@@ -40,7 +40,7 @@ const player1 = {
 const player2 = {
   dealing: false,
   toAct: true,
-  status: "raise",
+  status: "Raise",
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
@@ -123,15 +123,15 @@ function showCommunityCards() {
 }
 //change the raise condition in check hand is over to "wait" as well
 function resetPlayerStatus() {
-  playerActing.status = "raise";
-  playerNotActing.status = "raise";
+  playerActing.status = "Raise";
+  playerNotActing.status = "Raise";
 }
 
 //call button
 btnCall.addEventListener("click", function () {
   playerActing.latestBet = playerNotActing.latestBet;
   playerActing.roundBet += playerActing.latestBet;
-  playerActing.status = "call";
+  playerActing.status = "Call";
   playerActing.toAct = false;
   playerNotActing.toAct = true;
 
@@ -141,13 +141,14 @@ btnCall.addEventListener("click", function () {
 });
 
 btnCheck.addEventListener("click", function () {
-  console.log(checkRoundOver());
-  playerActing.status = "check";
-  updatePlayerRoundStatus("Check");
+  if (playerNotActing.status === "Raise") {
+    prompt("The other player raised. You must call, raise or fold");
+  } else {
+    updatePlayerRoundStatus("Check");
+  }
   showCommunityCards();
   changeToAct();
-  console.log(checkRoundOver());
-  console.log(communityCardsShown);
+
   //need to check functionaility of these buttons next
   //foldbutton
 });
@@ -156,7 +157,7 @@ function handleRaise(betAmount) {
   playerActing.latestBet = betAmount;
   playerActing.roundBet = betAmount + playerNotActing.roundBet;
   playerActing.balance -= betAmount + playerNotActing.latestBet;
-  playerActing.status = "raise";
+  playerActing.status = "Raise";
 }
 
 btnRaise.addEventListener("click", function () {
@@ -182,13 +183,13 @@ btnRaise.addEventListener("click", function () {
 });
 
 btnFold.addEventListener("click", function () {
-  playerActing.status = "fold";
+  playerActing.status = "Fold";
   newHand();
 });
 
 function checkRoundOver() {
   let roundOver = false;
-  if (player1.status != "raise" && player2.status != "raise") {
+  if (player1.status != "Raise" && player2.status != "Raise") {
     roundOver = true;
   }
   return roundOver;
