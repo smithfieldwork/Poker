@@ -32,7 +32,7 @@ const player2RoundStatus = document.getElementById("player--2--round--status");
 const player1 = {
   dealing: true,
   toAct: false,
-  status: "Raise",
+  status: "None",
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
@@ -42,7 +42,7 @@ const player1 = {
 const player2 = {
   dealing: false,
   toAct: true,
-  status: "Raise",
+  status: "None",
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
@@ -55,7 +55,6 @@ let communityCardsShown = 0;
 let betAmount = 0;
 let playerActing = player2;
 let playerNotActing = player1;
-let playerRoundStatus = player2RoundStatus;
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -141,15 +140,15 @@ function newHand() {
   postSmallBlind(player2balance);
   updatePlayerTurn();
   betAmount = 25;
+  player1RoundStatus.innerHTML = "Big Blind";
+  player2RoundStatus.innerHTML = "Small Blind";
+  player1.status = "Big Blind";
+  player2.status = "Small Blind";
 }
 
 btnNewHand.addEventListener("click", function () {
   newHand();
 });
-
-function updatePlayerRoundStatus(status) {
-  playerRoundStatus.innerHTML = status;
-}
 
 function updatePlayerTurn() {
   if (player1.toAct === true) {
@@ -182,6 +181,7 @@ function handleCall(betAmount) {
   playerActing.roundBet += playerActing.latestBet;
   playerActing.balance -= playerActing.latestBet;
   playerActing.status = "Call";
+  playerNotActing.status = "None";
   pot += playerActing.roundBet + playerNotActing.roundBet;
   if (playerActing === player1) {
     player1balance.textContent = playerActing.balance;
@@ -205,8 +205,8 @@ function showCommunityCards() {
 }
 
 function resetPlayerStatus() {
-  playerActing.status = "None";
-  playerNotActing.status = "None";
+  player1.status = "None";
+  player2.status = "None";
 }
 
 function showFlop() {
@@ -240,6 +240,8 @@ function changeToAct() {
 }
 
 function updatePlayerTextContent(player) {
+  player1RoundStatus.innerHTML = player1.status;
+  player2RoundStatus.innerHTML = player2.status;
   if (player === player1) {
     player1balance.textContent = playerActing.balance;
     player1RoundTotal.textContent = playerActing.roundBet;
@@ -257,6 +259,7 @@ function roundOver() {
   player2.latestBet = 0;
   player2.roundBet = 0;
   updatePlayerTextContent(playerActing);
+  resetPlayerStatus();
 }
 
 btnCall.addEventListener("click", function () {
