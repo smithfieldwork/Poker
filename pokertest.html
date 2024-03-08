@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="poker.css" />
+  </head>
+  <body>
+    <section>
+      <div class="table">
+        <div id="players">
+          <div id="player--1">
+            <h2 class="name" id="name--1">Player 1</h2>
+            <p id="player--1--balance">3000</p>
+            <p id="player--1--dealing"><br /></p>
+            <p id="player--1--YourTurn"><br /></p>
+
+            <img class="cardImages" id="hand--1--card1" src="" />
+            <img class="cardImages" id="hand--1--card2" src="" />
+            <p id="player--1--round--status">Post Blind</p>
+            <p id="player--1--latest--bet">0</p>
+            <p id="player--1--round--total">0</p>
+            <input type="text" id="bet--input--player1" name="bet1" />
+          </div>
+          <div id="pot">
+            <p>Pot</p>
+            <p id="Pot">0</p>
+          </div>
+          <div class="player--2">
+            <h2 class="name" id="name--2">Player 2</h2>
+            <p id="player--2--balance">3000</p>
+            <p id="player--2--dealing"><br /></p>
+            <p id="player--2--YourTurn"><br /></p>
+            <img class="cardImages" id="hand--2--card1" src="" />
+            <img class="cardImages" id="hand--2--card2" src="" />
+            <p id="player--2--round--status">Post Blind</p>
+            <p id="player--2--latest--bet">0</p>
+            <p id="player--2--round--total">0</p>
+            <input type="text" id="bet--input--player2" name="bet2" />
+          </div>
+        </div>
+
+        <div id="community--cards">
+          <img class="cardImages hidden" id="communityCard--1" src="" />
+          <img class="cardImages hidden" id="communityCard--2" src="" />
+          <img class="cardImages hidden" id="communityCard--3" src="" />
+          <img class="cardImages hidden" id="communityCard--4" src="" />
+          <img class="cardImages hidden" id="communityCard--5" src="" />
+        </div>
+
+        <div id="betting-buttons">
+          <button id="raise-button">Raise</button>
+          <button id="call-button">Call</button>
+          <button id="check-button">Check</button>
+          <button id="fold-button">Fold</button>
+        </div>
+        <button id="new-hand-button">New Hand</button>
+        <button id="new-game-button">New Game</button>
+      </div>
+    </section>
+    <script src="pokertest.js"></script>
+  </body>
+</html>

@@ -40,7 +40,7 @@ const player1 = {
 const player2 = {
   dealing: false,
   toAct: true,
-  status: "Raise",
+  status: "None",
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
@@ -58,14 +58,12 @@ let playerRoundStatus = player2RoundStatus;
 let pot = 0;
 //reduntant function now or else update with js object
 function changeToAct() {
-  if (playerActing === player1) {
-    playerActing = player2;
-    playerNotActing = player1;
-    playerRoundStatus = player2RoundStatus;
-  } else if (playerActing === player2) {
-    playerActing = player1;
-    playerNotActing = player2;
-    playerRoundStatus = player1RoundStatus;
+  if (player1.toAct === true) {
+    player1.toAct = false;
+    player2.toAct = true;
+  } else if (player2.toAct === true) {
+    player2.toAct = false;
+    player1.toAct = true;
   }
 }
 //redo with javascript function
@@ -126,23 +124,53 @@ function resetPlayerStatus() {
   playerActing.status = "Raise";
   playerNotActing.status = "Raise";
 }
+function roundOver() {
+  player1.latestBet = 0;
+  player1.roundBet = 0;
+  player2.latestBet = 0;
+  player2.roundBet = 0;
+  updatePlayerTextContent(playerActing);
+}
 
-//call button
-btnCall.addEventListener("click", function () {
-  playerActing.latestBet = playerNotActing.latestBet;
+function handleCall(betAmount) {
+  playerActing.latestBet = betAmount;
   playerActing.roundBet += playerActing.latestBet;
+  playerActing.balance -= playerActing.latestBet;
   playerActing.status = "Call";
-  playerActing.toAct = false;
-  playerNotActing.toAct = true;
-
-  pot += playerActing.latestBet + playerNotActing.latestBet;
+  pot += playerActing.latestBet;
+}
+//call button
+function updatePlayerTextContent(player) {
+  if (player === player1) {
+    player1balance.textContent = playerActing.balance;
+    player1RoundTotal.textContent = playerActing.roundBet;
+    player1LatestBet.textContent = playerActing.latestBet;
+  } else if (player === player2) {
+    player2balance.textContent = playerActing.balance;
+    player2RoundTotal.textContent = playerActing.roundBet;
+    player2LatestBet.textContent = playerActing.latestBet;
+  }
+}
+btnCall.addEventListener("click", function () {
+  handleCall(playerNotActing.latestBet);
+  if (playerActing === player1) {
+    player1balance.textContent = playerActing.balance;
+    player1RoundTotal.textContent = playerActing.roundBet;
+    player1LatestBet.textContent = playerActing.latestBet;
+  } else if (playerActing === player2) {
+    player2balance.textContent = playerActing.balance;
+    player2RoundTotal.textContent = playerActing.roundBet;
+    player2LatestBet.textContent = playerActing.latestBet;
+  }
   updatePlayerRoundStatus("Call");
+  showCommunityCards();
   changeToAct();
+  roundOver();
 });
 
 btnCheck.addEventListener("click", function () {
   if (playerNotActing.status === "Raise") {
-    prompt("The other player raised. You must call, raise or fold");
+    alert("The other player raised. You must call, raise or fold");
   } else {
     updatePlayerRoundStatus("Check");
   }
@@ -189,7 +217,13 @@ btnFold.addEventListener("click", function () {
 
 function checkRoundOver() {
   let roundOver = false;
-  if (player1.status != "Raise" && player2.status != "Raise") {
+  if (
+    player1.status === "Call" ||
+    player2.status === "Call" ||
+    player1.status === "Fold" ||
+    player2.status == "Fold" ||
+    (player1.status === "Check" && player2.status === "Check")
+  ) {
     roundOver = true;
   }
   return roundOver;
