@@ -28,9 +28,13 @@ const player1RoundTotal = document.getElementById("player--1--round--total");
 const player2RoundTotal = document.getElementById("player--2--round--total");
 const player1RoundStatus = document.getElementById("player--1--round--status");
 const player2RoundStatus = document.getElementById("player--2--round--status");
+const betInputPlayer1 = document.getElementById("bet--input--player1");
+const betInputPlayer2 = document.getElementById("bet--input--player2");
+const potObject = document.getElementById("pot");
+const amountToCallObject = document.getElementById("amount--to--call");
 
 const player1 = {
-  dealing: true,
+  dealing: false,
   toAct: false,
   status: "None",
   roundBet: 0,
@@ -41,7 +45,7 @@ const player1 = {
 //Build a feature that randomly assigns dealer
 const player2 = {
   dealing: false,
-  toAct: true,
+  toAct: false,
   status: "None",
   roundBet: 0,
   latestBet: 0,
@@ -55,6 +59,7 @@ let communityCardsShown = 0;
 let betAmount = 0;
 let playerActing = player2;
 let playerNotActing = player1;
+let amountToCall = 0;
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -94,39 +99,98 @@ function setCardImages() {
 function checkRoundOver() {
   let roundOver = false;
   if (
-    player1.status === "Call" ||
-    player2.status === "Call" ||
+    (player1.status === "Call" && player2.status === "Check") ||
+    (player2.status === "Call" && player1.status === "Check") ||
     player1.status === "Fold" ||
     player2.status == "Fold" ||
     (player1.status === "Check" && player2.status === "Check")
+    //add in condition of roundbet being equal raise and call
   ) {
     roundOver = true;
   }
   return roundOver;
 }
 
+function setDealer() {
+  if (checkIsFirstHand()) {
+    player1.dealing = true;
+  } else {
+    changeDealer();
+  }
+}
+function changeDealer() {
+  if (player1.dealing === true) {
+    player1.dealing = false;
+    player2.dealing = true;
+  } else if (player2.dealing === true) {
+    player2.dealing = false;
+    player1.dealing = true;
+  }
+}
 function showDealer() {
   if (player1.dealing) {
     player1Dealing.innerHTML = "Dealing";
     player2Dealing.innerHTML = "<br>";
-
-    player1.dealing = false;
-    player2.dealing = true;
   } else if (player2.dealing) {
     player1Dealing.innerHTML = "<br>";
     player2Dealing.innerHTML = "Dealing";
-
-    player1.dealing = true;
-    player2.dealing = false;
   }
 }
 
-function postBigBlind(playerBalance) {
-  playerBalance.innerHTML -= 50;
+function postBigBlind(player) {
+  player.balance -= 50;
+  player.latestBet = 50;
+  player.roundBet = 50;
+  pot += 50;
 }
 
-function postSmallBlind(playerBalance) {
-  playerBalance.innerHTML -= 25;
+function postSmallBlind(player) {
+  player.balance -= 25;
+  player.latestBet = 25;
+  player.roundBet = 25;
+  pot += 25;
+}
+
+function updateRoundTotal(amount) {
+  playerActing.roundBet += amount;
+}
+
+function updateLatestBet(amount) {
+  playerActing.latestBet += amount;
+}
+
+function updateBalance(amount) {
+  playerActing.balance -= amount;
+}
+
+function updatePot(amount) {
+  pot += amount;
+}
+
+function updateAmountToCall() {
+  amountToCall = currentBetAmount();
+}
+
+function updateAllBalances() {
+  player1balance.innerHTML = player1.balance;
+  player2balance.innerHTML = player2.balance;
+  player1LatestBet.innerHTML = player1.latestBet;
+  player2LatestBet.innerHTML = player2.latestBet;
+  player1RoundTotal.innerHTML = player1.roundBet;
+  player2RoundTotal.innerHTML = player2.roundBet;
+  potObject.innerHTML = pot;
+}
+
+function currentBetAmount() {
+  return Math.abs(player1.roundBet - player2.roundBet);
+}
+
+function checkIsFirstHand() {
+  if (player1.toAct === false && player2.toAct === false) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function newHand() {
@@ -135,18 +199,35 @@ function newHand() {
   dealCommunityCards();
   hideCommunityCards();
   setCardImages();
+  setDealer();
   showDealer();
-  postBigBlind(player1balance);
-  postSmallBlind(player2balance);
+  if (checkIsFirstHand()) {
+    setToAct();
+  } else {
+    changeToAct();
+    console.log(player2.status);
+  }
+
+  postBigBlind(playerNotActing);
+  postSmallBlind(playerActing);
+  updateAllBalances();
   updatePlayerTurn();
+
   betAmount = 25;
-  player1RoundStatus.innerHTML = "Big Blind";
-  player2RoundStatus.innerHTML = "Small Blind";
-  player1.status = "Big Blind";
-  player2.status = "Small Blind";
+  playerActing.status = "Small Blind";
+  playerNotActing.status = "Big Blind";
+  updateAmountToCall();
+  updatePlayerTextContent(playerActing);
+  updatePlayerTextContent(playerNotActing);
 }
 
-btnNewHand.addEventListener("click", function () {
+btnNewGame.addEventListener("click", function () {
+  //reset balances and pot
+  //
+  player1.dealing = false;
+  player1.toAct = false;
+  player2.dealing = false;
+  player2.toAct = false;
   newHand();
 });
 
@@ -176,37 +257,62 @@ function checkValidCall() {
   return result;
 }
 
-function handleCall(betAmount) {
-  playerActing.latestBet = betAmount;
-  playerActing.roundBet += playerActing.latestBet;
-  playerActing.balance -= playerActing.latestBet;
-  playerActing.status = "Call";
-  playerNotActing.status = "None";
-  pot += playerActing.roundBet + playerNotActing.roundBet;
-  if (playerActing === player1) {
-    player1balance.textContent = playerActing.balance;
-    player1RoundTotal.textContent = playerActing.roundBet;
-    player1LatestBet.textContent = playerActing.latestBet;
-  } else if (playerActing === player2) {
-    player2balance.textContent = playerActing.balance;
-    player2RoundTotal.textContent = playerActing.roundBet;
-    player2LatestBet.textContent = playerActing.latestBet;
+function checkValidCheck() {
+  var result = true;
+
+  if (
+    playerNotActing.status === "Raise" ||
+    playerNotActing.status === "Big Blind"
+  ) {
+    window.alert("You cannot check here");
+    result = false; //
   }
+
+  return result;
 }
+
+function handleCall(betAmount) {
+  updateLatestBet(betAmount);
+  updateRoundTotal(betAmount);
+  updateBalance(betAmount);
+  updatePot(betAmount);
+  updateAllBalances();
+  updateAmountToCall();
+  playerActing.status = "Call";
+}
+
+function handleRaise(betAmount) {
+  playerActing.status = "Raise";
+
+  updateLatestBet(betAmount);
+  updateRoundTotal(betAmount);
+  updateBalance(betAmount);
+  updatePot(betAmount);
+  updateAmountToCall();
+  updatePlayerTextContent();
+  //need to include when raise not enough
+}
+
+//include a betdirfference display
 
 function showCommunityCards() {
   if (checkRoundOver() && communityCardsShown === 0) {
     showFlop();
+    resetPlayerStatus();
   } else if (checkRoundOver() && communityCardsShown === 3) {
     showTurnCard();
+    resetPlayerStatus();
   } else if (checkRoundOver() && communityCardsShown === 4) {
     showRiverCard();
+    resetPlayerStatus();
   }
 }
 
 function resetPlayerStatus() {
   player1.status = "None";
   player2.status = "None";
+  player1RoundStatus.innerHTML = "None";
+  player2RoundStatus.innerHTML = "None";
 }
 
 function showFlop() {
@@ -215,59 +321,127 @@ function showFlop() {
   communityCard2.classList.remove("hidden");
   communityCard3.classList.remove("hidden");
   communityCardsShown = 3;
-  resetPlayerStatus();
 }
 function showTurnCard() {
   communityCard4.classList.remove("hidden");
   communityCardsShown = 4;
-  resetPlayerStatus();
 }
 
 function showRiverCard() {
   communityCard5.classList.remove("hidden");
   communityCardsShown = 5;
-  resetPlayerStatus();
+}
+
+function setToAct() {
+  if (player1.dealing === true) {
+    player2.toAct = true;
+  } else if (player2.dealing === true) {
+    player1.toAct = true;
+  }
 }
 
 function changeToAct() {
   if (player1.toAct === true) {
     player1.toAct = false;
     player2.toAct = true;
+    playerActing = player2;
+    playerNotActing = player1;
   } else if (player2.toAct === true) {
     player2.toAct = false;
     player1.toAct = true;
+    playerActing = player1;
+    playerNotActing = player2;
   }
 }
-
-function updatePlayerTextContent(player) {
+//check if this function is still necessary
+function updatePlayerTextContent() {
   player1RoundStatus.innerHTML = player1.status;
   player2RoundStatus.innerHTML = player2.status;
-  if (player === player1) {
-    player1balance.textContent = playerActing.balance;
-    player1RoundTotal.textContent = playerActing.roundBet;
-    player1LatestBet.textContent = playerActing.latestBet;
-  } else if (player === player2) {
-    player2balance.textContent = playerActing.balance;
-    player2RoundTotal.textContent = playerActing.roundBet;
-    player2LatestBet.textContent = playerActing.latestBet;
-  }
+
+  player1balance.textContent = player1.balance;
+  player1RoundTotal.textContent = player1.roundBet;
+  player1LatestBet.textContent = player1.latestBet;
+
+  player2balance.textContent = player2.balance;
+  player2RoundTotal.textContent = player2.roundBet;
+  player2LatestBet.textContent = player2.latestBet;
+
+  potObject.innerHTML = pot;
+  amountToCallObject.innerHTML = amountToCall;
 }
 
 function roundOver() {
   player1.latestBet = 0;
-  player1.roundBet = 0;
+
   player2.latestBet = 0;
-  player2.roundBet = 0;
+
   updatePlayerTextContent(playerActing);
-  resetPlayerStatus();
 }
 
 btnCall.addEventListener("click", function () {
   if (checkValidCall() === true) {
-    handleCall(playerNotActing.latestBet);
+    //console.log(player1.status);
+    //console.log(player2.status);
+    console.log(player1.latestBet);
+    console.log(player1.roundBet);
+    handleCall(currentBetAmount());
+    console.log(player1.latestBet);
+    console.log(player1.roundBet);
     showCommunityCards();
     changeToAct();
     updatePlayerTurn();
+    console.log(player1.latestBet);
+    console.log(player1.roundBet);
+    //console.log(player1.status);
+    //console.log(player2.status);
     roundOver();
   }
+});
+
+btnCheck.addEventListener("click", function () {
+  // insert check valid check function
+  if (checkValidCheck()) {
+    playerActing.status = "Check";
+    updatePlayerTextContent(playerActing);
+
+    showCommunityCards();
+    changeToAct();
+    updatePlayerTurn();
+  }
+  if (playerActing.status === "Check" && playerNotActing.status === "Check") {
+    roundOver();
+  }
+});
+
+btnFold.addEventListener("click", function () {
+  roundOver();
+  //insert appropriate pot changes into winner balance
+  //change dealer
+  //hand finished function
+  //console.log(checkIsFirstHand());
+  newHand();
+  //console.log(checkIsFirstHand());
+});
+
+btnRaise.addEventListener("click", function () {
+  let betAmount;
+  console.log(playerActing.status);
+  console.log(playerNotActing.status);
+  if (playerActing === player1) {
+    betAmount = parseInt(betInputPlayer1.value); // Get the value of the input field
+  } else if (playerActing === player2) {
+    betAmount = parseInt(betInputPlayer2.value); // Get the value of the input field
+  }
+
+  // Check if betAmount is a valid number
+  if (!isNaN(betAmount) && betAmount > 0) {
+    handleRaise(betAmount); // Pass the betAmount to handleRaise function
+    changeToAct();
+    updatePlayerTurn();
+  } else {
+    window.alert("Please enter a valid bet amount."); // Alert user if the bet amount is not valid
+  }
+
+  console.log(playerActing.status);
+  console.log(playerNotActing.status);
 });
