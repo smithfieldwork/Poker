@@ -40,7 +40,7 @@ const player1 = {
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
-  hand: new Array(4),
+  hand: new Array(5).fill(-1),
 };
 //Build a feature that randomly assigns dealer
 const player2 = {
@@ -50,7 +50,7 @@ const player2 = {
   roundBet: 0,
   latestBet: 0,
   balance: 3000,
-  hand: new Array(4),
+  hand: new Array(5).fill(-1),
 };
 
 const communityCards = new Array(5);
@@ -295,6 +295,12 @@ function handleRaise(betAmount) {
 
 //include a betdirfference display
 
+function handleHandWinner(player) {
+  player.balance += pot;
+  pot = 0;
+  updatePlayerTextContent;
+}
+
 function showCommunityCards() {
   if (checkRoundOver() && communityCardsShown === 0) {
     showFlop();
@@ -414,6 +420,7 @@ btnCheck.addEventListener("click", function () {
 });
 
 btnFold.addEventListener("click", function () {
+  handleHandWinner(playerNotActing);
   roundOver();
   //insert appropriate pot changes into winner balance
   //change dealer
@@ -445,3 +452,177 @@ btnRaise.addEventListener("click", function () {
   console.log(playerActing.status);
   console.log(playerNotActing.status);
 });
+
+// Hand Ranking
+//0 - High Card
+//1 - OnePair
+//2 - Two Pair
+//3 - Three of a kind
+//4 - Straight
+//5 - Flush
+//6 - Full House
+//7 - Poker
+//8 - Straight Flush
+
+function rankHand(cardHand) {
+  let ranking = 0;
+
+  if (checkForSinglePair(cardHand)) {
+    ranking = 1;
+  } else if (checkForTwoPairs(cardHand)) {
+    ranking = 2;
+  } else if (checkForTriple(cardHand)) {
+    ranking = 3;
+  } else if (checkForSinglePair(cardHand) && checkForTriple(cardHand)) {
+    ranking = 6;
+  } else if (checkForAPoker(cardHand)) {
+    ranking = 7;
+  } else if (checkForAStraight(cardHand) && checkForAFlush(cardHand)) {
+    ranking = 8;
+  }
+
+  return ranking;
+}
+function convertCardToNumberSuit(cardInteger) {
+  let card = new Array(2);
+  card[0] = cardInteger % 13;
+  card[1] = Math.floor(cardInteger / 13);
+
+  return card;
+}
+function checkForRepeatedCards(cardHand) {
+  let cardsNoSuit = {};
+  let pairsCount = 0;
+
+  for (let i = 0; i < cardHand.length; i++) {
+    const cardValue = convertCardToNumberSuit(cardHand[i])[0];
+
+    if (cardsNoSuit[cardValue]) {
+      cardsNoSuit[cardValue]++;
+    } else {
+      console.log(cardsNoSuit[cardValue]);
+      cardsNoSuit[cardValue] = 1;
+    }
+  }
+  return cardsNoSuit;
+}
+
+function checkForSinglePair(cardHand) {
+  let numberOfPairs = 0;
+  let singlePairPresent = false;
+
+  let cardsCountObject = checkForRepeatedCards(cardHand);
+  for (const i in cardsCountObject) {
+    if (cardsCountObject[i] === 2) {
+      numberOfPairs++;
+    }
+  }
+  if (numberOfPairs === 1) {
+    singlePairPresent = true;
+  }
+
+  return singlePairPresent;
+}
+
+function checkForTwoPairs(cardHand) {
+  let numberOfPairs = 0;
+  let twoPairsPresent = false;
+
+  let cardsCountObject = checkForRepeatedCards(cardHand);
+  for (const i in cardsCountObject) {
+    if (cardsCountObject[i] === 2) {
+      numberOfPairs++;
+    }
+  }
+  if (numberOfPairs === 2) {
+    twoPairsPresent = true;
+  }
+
+  return twoPairsPresent;
+}
+
+function checkForTriple(cardHand) {
+  let triplePresent = false;
+
+  let cardsCountObject = checkForRepeatedCards(cardHand);
+  for (let i in cardsCountObject) {
+    if (cardsCountObject[i] === 3) {
+      triplePresent = true;
+    }
+    if (cardsCountObject[i] === 4) {
+      triplePresent = false;
+    }
+  }
+
+  return triplePresent;
+}
+function checkForAStraight(cardHand) {
+  let straightPresent = false;
+  let valueOfCards = new Array(5);
+  let count = 0;
+
+  for (let i in cardHand) {
+    let cardValue = convertCardToNumberSuit(cardHand[i])[0] + 1;
+    valueOfCards[count] = cardValue;
+    count++;
+  }
+  let sortedCards = valueOfCards.sort(function (a, b) {
+    return a - b;
+  });
+
+  if (
+    (sortedCards[0] === sortedCards[1] - 1 &&
+      sortedCards[0] === sortedCards[2] - 2 &&
+      sortedCards[0] === sortedCards[3] - 3 &&
+      sortedCards[0] === sortedCards[4] - 4) ||
+    (sortedCards[0] === 1 &&
+      sortedCards[1] === 10 &&
+      sortedCards[2] === 11 &&
+      sortedCards[3] === 12 &&
+      sortedCards[4] === 13)
+  ) {
+    straightPresent = true;
+  }
+
+  return straightPresent;
+}
+function checkForAFlush(cardHand) {
+  let flushPresent = false;
+  let suitOfCards = new Array(5);
+  let count = 0;
+
+  for (let i in cardHand) {
+    let cardSuit = convertCardToNumberSuit(cardHand[i])[1];
+    suitOfCards[count] = cardSuit;
+    count++;
+  }
+
+  if (
+    suitOfCards[0] === suitOfCards[1] &&
+    suitOfCards[0] === suitOfCards[2] &&
+    suitOfCards[0] === suitOfCards[3] &&
+    suitOfCards[0] === suitOfCards[4]
+  ) {
+    flushPresent = true;
+  }
+
+  return flushPresent;
+}
+
+function checkForAPoker(cardHand) {
+  let pokerPresent = false;
+
+  let cardsCountObject = checkForRepeatedCards(cardHand);
+  for (const i in cardsCountObject) {
+    if (cardsCountObject[i] === 4) {
+      pokerPresent = true;
+    }
+  }
+
+  return pokerPresent;
+}
+
+// Need to test these checks
+const trialHand = [26, 27, 28, 25, 29];
+console.log(checkForAStraight(trialHand));
+//console.log(checkForTwoPairs(trialHand));
