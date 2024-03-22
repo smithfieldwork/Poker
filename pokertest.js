@@ -386,20 +386,10 @@ function roundOver() {
 
 btnCall.addEventListener("click", function () {
   if (checkValidCall() === true) {
-    //console.log(player1.status);
-    //console.log(player2.status);
-    console.log(player1.latestBet);
-    console.log(player1.roundBet);
     handleCall(currentBetAmount());
-    console.log(player1.latestBet);
-    console.log(player1.roundBet);
     showCommunityCards();
     changeToAct();
     updatePlayerTurn();
-    console.log(player1.latestBet);
-    console.log(player1.roundBet);
-    //console.log(player1.status);
-    //console.log(player2.status);
     roundOver();
   }
 });
@@ -432,8 +422,6 @@ btnFold.addEventListener("click", function () {
 
 btnRaise.addEventListener("click", function () {
   let betAmount;
-  console.log(playerActing.status);
-  console.log(playerNotActing.status);
   if (playerActing === player1) {
     betAmount = parseInt(betInputPlayer1.value); // Get the value of the input field
   } else if (playerActing === player2) {
@@ -448,9 +436,6 @@ btnRaise.addEventListener("click", function () {
   } else {
     window.alert("Please enter a valid bet amount."); // Alert user if the bet amount is not valid
   }
-
-  console.log(playerActing.status);
-  console.log(playerNotActing.status);
 });
 
 // Hand Ranking
@@ -483,6 +468,7 @@ function rankHand(cardHand) {
 
   return ranking;
 }
+
 function convertCardToNumberSuit(cardInteger) {
   let card = new Array(2);
   card[0] = cardInteger % 13;
@@ -490,6 +476,7 @@ function convertCardToNumberSuit(cardInteger) {
 
   return card;
 }
+
 function checkForRepeatedCards(cardHand) {
   let cardsNoSuit = {};
   let pairsCount = 0;
@@ -556,6 +543,7 @@ function checkForTriple(cardHand) {
 
   return triplePresent;
 }
+
 function checkForAStraight(cardHand) {
   let straightPresent = false;
   let valueOfCards = new Array(5);
@@ -586,6 +574,7 @@ function checkForAStraight(cardHand) {
 
   return straightPresent;
 }
+
 function checkForAFlush(cardHand) {
   let flushPresent = false;
   let suitOfCards = new Array(5);
@@ -622,7 +611,282 @@ function checkForAPoker(cardHand) {
   return pokerPresent;
 }
 
+function pairValue(cardHand) {
+  let tempPairs = [-1, -1];
+  let pairs = [-1, -1];
+  let cardsCountObject = checkForRepeatedCards(cardHand);
+
+  for (let i in cardsCountObject) {
+    if (cardsCountObject[i] === 2 && tempPairs[0] === -1) {
+      tempPairs[0] = parseInt(i);
+    } else if (cardsCountObject[i] === 2 && tempPairs[0] != -1) {
+      tempPairs[1] = parseInt(i);
+    }
+  }
+
+  pairs = tempPairs.sort(function (a, b) {
+    return b - a;
+  });
+
+  return pairs;
+}
+
+function tripleValue(cardHand) {
+  let triple = -1;
+  let cardsCountObject = checkForRepeatedCards(cardHand);
+
+  for (let i in cardsCountObject) {
+    if (cardsCountObject[i] === 3) {
+      triple = parseInt(i);
+    }
+  }
+
+  return triple;
+}
+
+function kickerValues(cardHand) {
+  let kickersTemp = [-1, -1, -1, -1, -1];
+  let count = 0;
+  let cardsCountObject = checkForRepeatedCards(cardHand);
+
+  for (let i in cardsCountObject) {
+    if (cardsCountObject[i] === 1) {
+      kickersTemp[count] = parseInt(i);
+      count++;
+    }
+  }
+  let kickers = kickersTemp.sort(function (a, b) {
+    return b - a;
+  });
+  return kickers;
+}
+
+function handleWinnerHighCard(handOne, handTwo) {
+  //Assumes both hands are a pair
+  //Need to build in ace here
+  let winner = [0, 0];
+  let kickerOne = kickerValues(handOne);
+  let kickerTwo = kickerValues(handTwo);
+
+  for (let i = 0; i < 5; i++) {
+    if (kickerOne[i] > kickerTwo[i]) {
+      winner = [1, 0];
+      break;
+    } else if (kickerTwo[i] > kickerOne[i]) {
+      winner = [0, 1];
+      break;
+    } else {
+      winner = [1, 1];
+    }
+  }
+
+  return winner;
+}
+
+function handleWinnerBothPair(handOne, handTwo) {
+  //Assumes both hands are a pair
+  //Need to build in ace here
+  let winner = [0, 0];
+  let pairOne = pairValue(handOne);
+  let kickerOne = kickerValues(handOne);
+  let pairTwo = pairValue(handTwo);
+  let kickerTwo = kickerValues(handTwo);
+
+  if (pairOne[0] > pairTwo[0]) {
+    winner = [1, 0];
+  } else if (pairTwo[0] > pairOne[0]) {
+    winner = [0, 1];
+  } else {
+    for (let i = 0; i < 3; i++) {
+      if (kickerOne[i] > kickerTwo[i]) {
+        winner = [1, 0];
+      } else if (kickerTwo[i] > kickerOne[i]) {
+        winner = [0, 1];
+      } else {
+        winner = [1, 1];
+      }
+    }
+  }
+  return winner;
+}
+
+function handleWinnerBothTriple(handOne, handTwo) {
+  //Assumes both hands are a pair
+  //Need to build in ace here
+  let winner = [0, 0];
+  let tripleOne = tripleValue(handOne);
+  let kickerOne = kickerValues(handOne);
+  let tripleTwo = tripleValue(handTwo);
+  let kickerTwo = kickerValues(handTwo);
+
+  if (tripleOne[0] > tripleTwo[0]) {
+    winner = [1, 0];
+  } else if (tripleTwo[0] > tripleOne[0]) {
+    winner = [0, 1];
+  } else {
+    for (let i = 0; i < 3; i++) {
+      if (kickerOne[i] > kickerTwo[i]) {
+        winner = [1, 0];
+      } else if (kickerTwo[i] > kickerOne[i]) {
+        winner = [0, 1];
+      } else {
+        winner = [1, 1];
+      }
+    }
+  }
+  return winner;
+}
+
+function handleWinnerBothTwoPair(handOne, handTwo) {
+  //Assumes both hands are a pair
+  //Need to build in ace here
+  let winner = [0, 0];
+  let pairOne = pairValue(handOne);
+  let kickerOne = kickerValues(handOne);
+  let pairTwo = pairValue(handTwo);
+  let kickerTwo = kickerValues(handTwo);
+
+  if (pairOne[0] > pairTwo[0]) {
+    winner = [1, 0];
+  } else if (pairTwo[0] > pairOne[0]) {
+    winner = [0, 1];
+  } else {
+    if (pairOne[1] > pairTwo[1]) {
+      winner = [1, 0];
+    } else if (pairTwo[1] > pairOne[1]) {
+      winner = [0, 1];
+    } else {
+      if (kickerOne[0] > kickerTwo[0]) {
+        winner = [1, 0];
+      } else if (kickerTwo[0] > kickerOne[0]) {
+        winner = [0, 1];
+      } else {
+        winner = [1, 1];
+      }
+    }
+  }
+
+  return winner;
+}
+
+function handleWinnerBothStraight(handOne, handTwo) {
+  const winner = handleWinnerHighCard(handOne, handTwo);
+  return winner;
+}
+
+function handleWinnerBothFlush(handOne, handTwo) {
+  const winner = handleWinnerHighCard(handOne, handTwo);
+  return winner;
+}
+
+function handleWinnerBothFullHouse(handOne, handTwo) {
+  let winner = [-1, -1];
+  winner = handleWinnerBothTriple(handOne, handTwo);
+  if (winner[0] === 1 && winner[1] === 1) {
+    winner = handleWinnerBothPair(handOne, handTwo);
+  }
+
+  return winner;
+}
+
+function selectWinnerFiveCards(handOne, handTwo) {
+  let rankOne = rankHand(handOne);
+  let rankTwo = rankHand(handTwo);
+  let winner = [-1, -1];
+  if (rankOne > rankTwo) {
+    winner[0] = 1;
+    winner[1] = 0;
+  } else if (rankTwo > rankOne) {
+    winner[0] = 0;
+    winner[1] = 1;
+  } else if (rankOne === 0 && rankTwo === 0) {
+    winner = handleWinnerHighCard(handOne, handTwo);
+  } else if (rankOne === 1 && rankTwo === 1) {
+    winner = handleWinnerBothPair(handOne, handTwo);
+  } else if (rankOne === 2 && rankTwo === 2) {
+    winner = handleWinnerBothTwoPair(handOne, handTwo);
+  } else if (rankOne === 3 && rankTwo === 3) {
+    winner = handleWinnerBothTriple(handOne, handTwo);
+  } else if (rankOne === 4 && rankTwo === 4) {
+    winner = handleWinnerBothStraight(handOne, handTwo);
+  } else if (rankOne === 5 && rankTwo === 5) {
+    winner = handleWinnerBothFlush(handOne, handTwo);
+  } else if (rankOne === 6 && rankTwo === 6) {
+    winner = handleWinnerBothFullHouse(handOne, handTwo);
+  } else if (rankOne === 7 && rankTwo === 7) {
+    winner = handleWinnerHighCard(handOne, handTwo);
+  } else if (rankOne === 8 && rankTwo === 8) {
+    winner = handleWinnerHighCard(handOne, handTwo);
+  }
+  console.log(rankOne);
+  console.log(rankTwo);
+  return winner;
+}
+
+function handleWinningPot() {
+  let bestHandOne = getBestHand(player1.hand);
+  let bestHandTwo = getBestHand(player2.hand);
+  let winner = selectWinnerFiveCards(bestHandOne, bestHandTwo);
+  if (winner[0] === 1 && winner[1] === 0) {
+    player1.balance += pot;
+  } else if (winner[1] === 1 && winner[0] === 0) {
+    player2.balance += pot;
+  } else {
+    player1.balance += pot / 2;
+    player2.balance += pot / 2;
+  }
+
+  pot = 0;
+  updatePlayerTextContent();
+  console.log(winner);
+}
+
+function mergeCards(hand, communityCardsArr) {
+  const mergedArray = hand.concat(communityCardsArr);
+  return mergedArray;
+}
+
+function getSubsetsOfSize(array, size) {
+  const subsets = [];
+  const len = array.length;
+
+  // Generate binary representations for all possible subsets
+  for (let i = 0; i < Math.pow(2, len); i++) {
+    const subset = [];
+    for (let j = 0; j < len; j++) {
+      // Check if jth bit in the binary representation of i is set
+      if ((i & (1 << j)) !== 0) {
+        subset.push(array[j]);
+      }
+    }
+    // Add subset to the result if its size is equal to the desired size
+    if (subset.length === size) {
+      subsets.push(subset);
+    }
+  }
+  return subsets;
+}
+
+function getBestHandFromSeven(sevenCards) {
+  let arrayOfHands = getSubsetsOfSize(sevenCards);
+  let bestHand = arrayOfHands[0];
+  for (let arr in arrayOfHands) {
+    if (arr === selectWinnerFiveCards(bestHand, arr)) {
+      bestHand = arr;
+    }
+  }
+  return bestHand;
+}
+
+function getBestHand(playersHand) {
+  let possibleCards = mergeCards(playersHand, communityCards);
+  let bestHand = getBestHandFromSeven(possibleCards);
+  return bestHand;
+}
+
 // Need to test these checks
-const trialHand = [26, 27, 28, 25, 29];
-console.log(checkForAStraight(trialHand));
+const trialHandOne = [1, 2, 14, 15, 51];
+const trialHandTwo = [27, 28, 40, 41, 50];
+//console.log(handleWinnerBothTwoPair(trialHandOne, trialHandTwo));
 //console.log(checkForTwoPairs(trialHand));
+handleWinningPot(trialHandOne, trialHandTwo);
