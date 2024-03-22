@@ -53,7 +53,7 @@ const player2 = {
   hand: new Array(5).fill(-1),
 };
 
-const communityCards = new Array(5);
+let communityCards = new Array(5);
 let pot = 0;
 let communityCardsShown = 0;
 let betAmount = 0;
@@ -479,7 +479,6 @@ function convertCardToNumberSuit(cardInteger) {
 
 function checkForRepeatedCards(cardHand) {
   let cardsNoSuit = {};
-  let pairsCount = 0;
 
   for (let i = 0; i < cardHand.length; i++) {
     const cardValue = convertCardToNumberSuit(cardHand[i])[0];
@@ -868,7 +867,7 @@ function getSubsetsOfSize(array, size) {
 }
 
 function getBestHandFromSeven(sevenCards) {
-  let arrayOfHands = getSubsetsOfSize(sevenCards);
+  let arrayOfHands = getSubsetsOfSize(sevenCards, 5);
   let bestHand = arrayOfHands[0];
   for (let arr in arrayOfHands) {
     if (arr === selectWinnerFiveCards(bestHand, arr)) {
@@ -885,8 +884,10 @@ function getBestHand(playersHand) {
 }
 
 // Need to test these checks
-const trialHandOne = [1, 2, 14, 15, 51];
+communityCards = [1, 2, 14, 15, 51];
 const trialHandTwo = [27, 28, 40, 41, 50];
 //console.log(handleWinnerBothTwoPair(trialHandOne, trialHandTwo));
 //console.log(checkForTwoPairs(trialHand));
-handleWinningPot(trialHandOne, trialHandTwo);
+player1.hand = [9, 5];
+player2.hand = [13, 16];
+handleWinningPot();
