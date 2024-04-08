@@ -10,7 +10,7 @@ const communityCard3 = document.getElementById("communityCard--3");
 const communityCard4 = document.getElementById("communityCard--4");
 const communityCard5 = document.getElementById("communityCard--5");
 const communityCardsClass = document.getElementById("community--cards");
-const btnNewHand = document.getElementById("new-hand-button");
+const btnNextHand = document.getElementById("next-hand-button");
 const btnNewGame = document.getElementById("new-game-button");
 const btnRaise = document.getElementById("raise-button");
 const btnCall = document.getElementById("call-button");
@@ -60,6 +60,8 @@ let betAmount = 0;
 let playerActing = player2;
 let playerNotActing = player1;
 let amountToCall = 0;
+let numberOfChecks = 0;
+let handComplete = false;
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -82,6 +84,11 @@ function dealCommunityCards() {
 
 function hideCommunityCards() {
   communityCardsClass.classList.add("hidden");
+  communityCard1.classList.add("hidden");
+  communityCard2.classList.add("hidden");
+  communityCard3.classList.add("hidden");
+  communityCard4.classList.add("hidden");
+  communityCard5.classList.add("hidden");
 }
 
 function setCardImages() {
@@ -99,16 +106,32 @@ function setCardImages() {
 function checkRoundOver() {
   let roundOver = false;
   if (
+    (player1.status === "Call" &&
+      player2.status === "Raise" &&
+      betAmount === 0) ||
+    (player2.status === "Call" &&
+      player1.status === "Raise" &&
+      betAmount === 0) ||
     (player1.status === "Call" && player2.status === "Check") ||
     (player2.status === "Call" && player1.status === "Check") ||
-    player1.status === "Fold" ||
-    player2.status == "Fold" ||
     (player1.status === "Check" && player2.status === "Check")
     //add in condition of roundbet being equal raise and call
   ) {
     roundOver = true;
   }
   return roundOver;
+}
+
+function checkHandOver() {
+  let handOver = false;
+  if (
+    (checkRoundOver() && communityCardsShown === 5) ||
+    player1.status === "Fold" ||
+    player2.status == "Fold"
+  ) {
+    handOver = true;
+  }
+  return handOver;
 }
 
 function setDealer() {
@@ -142,6 +165,7 @@ function postBigBlind(player) {
   player.latestBet = 50;
   player.roundBet = 50;
   pot += 50;
+  player.status = "Big Blind";
 }
 
 function postSmallBlind(player) {
@@ -149,6 +173,7 @@ function postSmallBlind(player) {
   player.latestBet = 25;
   player.roundBet = 25;
   pot += 25;
+  player.status = "Small Blind";
 }
 
 function updateRoundTotal(amount) {
@@ -167,9 +192,7 @@ function updatePot(amount) {
   pot += amount;
 }
 
-function updateAmountToCall() {
-  amountToCall = currentBetAmount();
-}
+function updateAmountToCall() {}
 
 function updateAllBalances() {
   player1balance.innerHTML = player1.balance;
@@ -179,6 +202,23 @@ function updateAllBalances() {
   player1RoundTotal.innerHTML = player1.roundBet;
   player2RoundTotal.innerHTML = player2.roundBet;
   potObject.innerHTML = pot;
+  amountToCall = currentBetAmount();
+}
+
+function updatePlayerTextContent() {
+  player1RoundStatus.innerHTML = player1.status;
+  player2RoundStatus.innerHTML = player2.status;
+
+  player1balance.textContent = player1.balance;
+  player1RoundTotal.textContent = player1.roundBet;
+  player1LatestBet.textContent = player1.latestBet;
+
+  player2balance.textContent = player2.balance;
+  player2RoundTotal.textContent = player2.roundBet;
+  player2LatestBet.textContent = player2.latestBet;
+
+  potObject.innerHTML = pot;
+  amountToCallObject.innerHTML = amountToCall;
 }
 
 function currentBetAmount() {
@@ -192,42 +232,72 @@ function checkIsFirstHand() {
     return false;
   }
 }
-
-function newHand() {
-  dealPlayerHand(player1.hand);
-  dealPlayerHand(player2.hand);
+function setUpCommunityCards() {
   dealCommunityCards();
   hideCommunityCards();
   setCardImages();
+}
+
+function dealHands() {
+  dealPlayerHand(player1.hand);
+  dealPlayerHand(player2.hand);
+}
+
+function handleDealerSetup() {
   setDealer();
   showDealer();
   if (checkIsFirstHand()) {
     setToAct();
   } else {
     changeToAct();
-    console.log(player2.status);
   }
-
-  postBigBlind(playerNotActing);
-  postSmallBlind(playerActing);
-  updateAllBalances();
   updatePlayerTurn();
-
-  betAmount = 25;
-  playerActing.status = "Small Blind";
-  playerNotActing.status = "Big Blind";
-  updateAmountToCall();
-  updatePlayerTextContent(playerActing);
-  updatePlayerTextContent(playerNotActing);
 }
 
-btnNewGame.addEventListener("click", function () {
-  //reset balances and pot
-  //
+function handleBlinds() {
+  postBigBlind(playerNotActing);
+  postSmallBlind(playerActing);
+  betAmount = 25;
+  updateAmountToCall();
+  updateAllBalances();
+}
+
+function newHand() {
+  communityCardsShown = 0;
+  dealHands();
+  setUpCommunityCards();
+  handleDealerSetup();
+  handleBlinds();
+  updatePlayerTextContent();
+}
+
+function resetHandVariables() {
+  pot = 0;
+  player1.latestBet = 0;
+  player2.latestBet = 0;
+  player1.roundBet = 0;
+  player2.roundBet = 0;
   player1.dealing = false;
   player1.toAct = false;
   player2.dealing = false;
   player2.toAct = false;
+  communityCardsShown = 0;
+  handComplete = false;
+}
+
+function resetBalances() {
+  player1.balance = 3000;
+  player2.balance = 3000;
+}
+
+btnNewGame.addEventListener("click", function () {
+  resetBalances();
+  resetHandVariables();
+  newHand();
+});
+
+btnNextHand.addEventListener("click", function () {
+  resetHandVariables();
   newHand();
 });
 
@@ -238,6 +308,12 @@ function updatePlayerTurn() {
   } else if (player2.toAct === true) {
     player2YourTurn.innerHTML = "Your Turn";
     player1YourTurn.innerHTML = " ";
+  }
+}
+function handOverAlert() {
+  if (handComplete === true) {
+    window.alert("The hand is over");
+    return;
   }
 }
 
@@ -311,14 +387,15 @@ function showCommunityCards() {
   } else if (checkRoundOver() && communityCardsShown === 4) {
     showRiverCard();
     resetPlayerStatus();
+  } else if (checkRoundOver() && communityCardsShown === 5) {
+    handComplete = true;
   }
 }
 
 function resetPlayerStatus() {
   player1.status = "None";
   player2.status = "None";
-  player1RoundStatus.innerHTML = "None";
-  player2RoundStatus.innerHTML = "None";
+  updatePlayerTextContent();
 }
 
 function showFlop() {
@@ -360,69 +437,88 @@ function changeToAct() {
   }
 }
 //check if this function is still necessary
-function updatePlayerTextContent() {
-  player1RoundStatus.innerHTML = player1.status;
-  player2RoundStatus.innerHTML = player2.status;
 
-  player1balance.textContent = player1.balance;
-  player1RoundTotal.textContent = player1.roundBet;
-  player1LatestBet.textContent = player1.latestBet;
-
-  player2balance.textContent = player2.balance;
-  player2RoundTotal.textContent = player2.roundBet;
-  player2LatestBet.textContent = player2.latestBet;
-
-  potObject.innerHTML = pot;
-  amountToCallObject.innerHTML = amountToCall;
-}
+//function resetLatestBet() {
+//player1.latestBet = 0;
+//player2.latestBet = 0;
+//}
 
 function roundOver() {
-  player1.latestBet = 0;
-
-  player2.latestBet = 0;
-
-  updatePlayerTextContent(playerActing);
+  if (checkHandOver()) {
+    handleWinner();
+  }
+  player1.status = "None";
+  player2.status = "None";
+  updatePlayerTextContent();
 }
 
 btnCall.addEventListener("click", function () {
+  if (handComplete === true) {
+    window.alert("The hand is over");
+    return;
+  }
+
   if (checkValidCall() === true) {
+    playerActing.status = "Call";
     handleCall(currentBetAmount());
     showCommunityCards();
     changeToAct();
     updatePlayerTurn();
-    roundOver();
+    updatePlayerTextContent();
   }
+  console.log(handComplete);
 });
 
 btnCheck.addEventListener("click", function () {
-  // insert check valid check function
+  // Check if the hand is over
+  if (handComplete) {
+    window.alert("The hand is over");
+    return;
+  }
+
+  // Check if the check action is valid
   if (checkValidCheck()) {
     playerActing.status = "Check";
-    updatePlayerTextContent(playerActing);
-
+    updatePlayerTextContent();
     showCommunityCards();
     changeToAct();
     updatePlayerTurn();
   }
+
+  // Check if both players have checked
   if (playerActing.status === "Check" && playerNotActing.status === "Check") {
     roundOver();
   }
 });
 
 btnFold.addEventListener("click", function () {
-  handleHandWinner(playerNotActing);
-  roundOver();
+  if (handComplete === true) {
+    window.alert("The hand is over");
+    return;
+  }
+  if (checkHandOver) {
+    window.alert("No raise was made");
+  } else {
+    handleHandWinner(playerNotActing);
+    roundOver();
+  }
   //insert appropriate pot changes into winner balance
   //change dealer
   //hand finished function
-  //console.log(checkIsFirstHand());
+
   newHand();
-  //console.log(checkIsFirstHand());
 });
 
 btnRaise.addEventListener("click", function () {
+  if (handComplete === true) {
+    window.alert("The hand is over");
+    return;
+  }
+
   let betAmount;
-  if (playerActing === player1) {
+  if (checkHandOver) {
+    window.alert("No raise was made");
+  } else if (playerActing === player1) {
     betAmount = parseInt(betInputPlayer1.value); // Get the value of the input field
   } else if (playerActing === player2) {
     betAmount = parseInt(betInputPlayer2.value); // Get the value of the input field
@@ -486,7 +582,6 @@ function checkForRepeatedCards(cardHand) {
     if (cardsNoSuit[cardValue]) {
       cardsNoSuit[cardValue]++;
     } else {
-      console.log(cardsNoSuit[cardValue]);
       cardsNoSuit[cardValue] = 1;
     }
   }
@@ -544,30 +639,41 @@ function checkForTriple(cardHand) {
 }
 
 function checkForAStraight(cardHand) {
+  let valueOfCards = [];
   let straightPresent = false;
-  let valueOfCards = new Array(5);
-  let count = 0;
 
-  for (let i in cardHand) {
-    let cardValue = convertCardToNumberSuit(cardHand[i])[0] + 1;
-    valueOfCards[count] = cardValue;
-    count++;
+  // Extract the card values and normalize them
+  for (let card of cardHand) {
+    let cardValue = convertCardToNumberSuit(card)[0];
+    valueOfCards.push(cardValue % 13); // Normalize the value by modulo 13
   }
-  let sortedCards = valueOfCards.sort(function (a, b) {
-    return a - b;
-  });
 
+  // Sort the card values
+  valueOfCards.sort((a, b) => a - b);
+
+  // Check for the straight
+  for (let i = 0; i <= valueOfCards.length - 5; i++) {
+    if (
+      valueOfCards[i] === valueOfCards[i + 1] - 1 &&
+      valueOfCards[i + 1] === valueOfCards[i + 2] - 1 &&
+      valueOfCards[i + 2] === valueOfCards[i + 3] - 1 &&
+      valueOfCards[i + 3] === valueOfCards[i + 4] - 1
+    ) {
+      straightPresent = true;
+      break;
+    }
+  }
+
+  // Special case for A-2-3-4-5 straight
   if (
-    (sortedCards[0] === sortedCards[1] - 1 &&
-      sortedCards[0] === sortedCards[2] - 2 &&
-      sortedCards[0] === sortedCards[3] - 3 &&
-      sortedCards[0] === sortedCards[4] - 4) ||
-    (sortedCards[0] === 1 &&
-      sortedCards[1] === 10 &&
-      sortedCards[2] === 11 &&
-      sortedCards[3] === 12 &&
-      sortedCards[4] === 13)
+    !straightPresent &&
+    valueOfCards.includes(1) &&
+    valueOfCards.includes(2) &&
+    valueOfCards.includes(3) &&
+    valueOfCards.includes(4) &&
+    valueOfCards.includes(0)
   ) {
+    // Check if 1 (Ace) exists
     straightPresent = true;
   }
 
@@ -817,27 +923,38 @@ function selectWinnerFiveCards(handOne, handTwo) {
   } else if (rankOne === 8 && rankTwo === 8) {
     winner = handleWinnerHighCard(handOne, handTwo);
   }
-  console.log(rankOne);
-  console.log(rankTwo);
+  // console.log(rankOne);
+  // console.log(rankTwo);
   return winner;
 }
 
-function handleWinningPot() {
-  let bestHandOne = getBestHand(player1.hand);
-  let bestHandTwo = getBestHand(player2.hand);
-  let winner = selectWinnerFiveCards(bestHandOne, bestHandTwo);
-  if (winner[0] === 1 && winner[1] === 0) {
+function handleWinnerPot(winnerArray) {
+  if (winnerArray[0] === 1 && winnerArray[1] === 0) {
     player1.balance += pot;
-  } else if (winner[1] === 1 && winner[0] === 0) {
+  } else if (winnerArray[1] === 1 && winnerArray[0] === 0) {
     player2.balance += pot;
   } else {
     player1.balance += pot / 2;
     player2.balance += pot / 2;
   }
-
   pot = 0;
   updatePlayerTextContent();
-  console.log(winner);
+}
+
+function handleChooseWinner() {
+  let bestHandOne = getBestHand(player1.hand);
+  console.log(rankHand(bestHandOne));
+  let bestHandTwo = getBestHand(player2.hand);
+  console.log(rankHand(bestHandTwo));
+  let winner = selectWinnerFiveCards(bestHandOne, bestHandTwo);
+  //console.log(winner);
+
+  return winner;
+}
+
+function handleWinner() {
+  let winner = handleChooseWinner();
+  handleWinnerPot(winner);
 }
 
 function mergeCards(hand, communityCardsArr) {
@@ -846,32 +963,34 @@ function mergeCards(hand, communityCardsArr) {
 }
 
 function getSubsetsOfSize(array, size) {
-  const subsets = [];
-  const len = array.length;
+  const result = [];
 
-  // Generate binary representations for all possible subsets
-  for (let i = 0; i < Math.pow(2, len); i++) {
-    const subset = [];
-    for (let j = 0; j < len; j++) {
-      // Check if jth bit in the binary representation of i is set
-      if ((i & (1 << j)) !== 0) {
-        subset.push(array[j]);
-      }
-    }
-    // Add subset to the result if its size is equal to the desired size
+  function combine(start, subset) {
     if (subset.length === size) {
-      subsets.push(subset);
+      result.push(subset.slice()); // Push a copy of the subset to the result array
+      return;
+    }
+    for (let i = start; i < array.length; i++) {
+      subset.push(array[i]);
+      combine(i + 1, subset);
+      subset.pop();
     }
   }
-  return subsets;
+
+  combine(0, []);
+  return result;
 }
+
+// Example usage:
 
 function getBestHandFromSeven(sevenCards) {
   let arrayOfHands = getSubsetsOfSize(sevenCards, 5);
   let bestHand = arrayOfHands[0];
-  for (let arr in arrayOfHands) {
-    if (arr === selectWinnerFiveCards(bestHand, arr)) {
-      bestHand = arr;
+
+  for (let i = 1; i < arrayOfHands.length; i++) {
+    //console.log(arrayOfHands[i], rankHand(arrayOfHands[i]));
+    if (rankHand(arrayOfHands[i]) > rankHand(bestHand)) {
+      bestHand = arrayOfHands[i];
     }
   }
   return bestHand;
@@ -884,10 +1003,13 @@ function getBestHand(playersHand) {
 }
 
 // Need to test these checks
-communityCards = [1, 2, 14, 15, 51];
-const trialHandTwo = [27, 28, 40, 41, 50];
-//console.log(handleWinnerBothTwoPair(trialHandOne, trialHandTwo));
-//console.log(checkForTwoPairs(trialHand));
-player1.hand = [9, 5];
-player2.hand = [13, 16];
-handleWinningPot();
+communityCards = [51, 50, 1, 2, 3];
+//let trialHandTwo = [27, 28, 40, 41, 50];
+player1.hand = [17, 18];
+player2.hand = [14, 15];
+//const h = [1, 2, 3, 4, 5, 6, 7];
+
+console.log(handleWinnerPot(player1.hand, player2.hand));
+//let x = mergeCards(player1.hand, communityCards);
+//console.log(getBestHandFromSeven(x));
+//console.log(getBestHand(player1.hand));
