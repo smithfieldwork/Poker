@@ -62,6 +62,7 @@ let playerNotActing = player1;
 let amountToCall = 0;
 let numberOfChecks = 0;
 let handComplete = false;
+let gameHasStarted = false;
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -264,6 +265,7 @@ function handleBlinds() {
 
 function newHand() {
   communityCardsShown = 0;
+  gameHasStarted = true;
   dealHands();
   setUpCommunityCards();
   handleDealerSetup();
@@ -297,6 +299,10 @@ btnNewGame.addEventListener("click", function () {
 });
 
 btnNextHand.addEventListener("click", function () {
+  if (!gameHasStarted) {
+    window.alert("Game has not started yet");
+    return;
+  }
   resetHandVariables();
   newHand();
 });
@@ -308,12 +314,6 @@ function updatePlayerTurn() {
   } else if (player2.toAct === true) {
     player2YourTurn.innerHTML = "Your Turn";
     player1YourTurn.innerHTML = " ";
-  }
-}
-function handOverAlert() {
-  if (handComplete === true) {
-    window.alert("The hand is over");
-    return;
   }
 }
 
@@ -453,6 +453,11 @@ function roundOver() {
 }
 
 btnCall.addEventListener("click", function () {
+  if (!gameHasStarted) {
+    window.alert("Game has not started yet");
+    return;
+  }
+
   if (handComplete === true) {
     window.alert("The hand is over");
     return;
@@ -466,11 +471,15 @@ btnCall.addEventListener("click", function () {
     updatePlayerTurn();
     updatePlayerTextContent();
   }
-  console.log(handComplete);
 });
 
 btnCheck.addEventListener("click", function () {
   // Check if the hand is over
+  if (!gameHasStarted) {
+    window.alert("Game has not started yet");
+    return;
+  }
+
   if (handComplete) {
     window.alert("The hand is over");
     return;
@@ -492,12 +501,18 @@ btnCheck.addEventListener("click", function () {
 });
 
 btnFold.addEventListener("click", function () {
+  if (!gameHasStarted) {
+    window.alert("Game has not started yet");
+    return;
+  }
+
   if (handComplete === true) {
     window.alert("The hand is over");
     return;
   }
-  if (checkHandOver) {
+  if (amountToCall === 0) {
     window.alert("No raise was made");
+    return;
   } else {
     handleHandWinner(playerNotActing);
     roundOver();
@@ -510,15 +525,19 @@ btnFold.addEventListener("click", function () {
 });
 
 btnRaise.addEventListener("click", function () {
+  if (!gameHasStarted) {
+    window.alert("Game has not started yet");
+    return;
+  }
   if (handComplete === true) {
     window.alert("The hand is over");
     return;
   }
 
   let betAmount;
-  if (checkHandOver) {
-    window.alert("No raise was made");
-  } else if (playerActing === player1) {
+
+  // window.alert("No raise was made");
+  if (playerActing === player1) {
     betAmount = parseInt(betInputPlayer1.value); // Get the value of the input field
   } else if (playerActing === player2) {
     betAmount = parseInt(betInputPlayer2.value); // Get the value of the input field
