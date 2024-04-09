@@ -104,6 +104,11 @@ function setCardImages() {
   communityCard5.src = `Deck of Cards/${communityCards[4]}.png`;
 }
 
+function revealPlayer2Cards() {
+  player2Card1.src = `Deck of Cards/${player2.hand[0]}.png`;
+  player2Card2.src = `Deck of Cards/${player2.hand[1]}.png`;
+}
+
 function checkRoundOver() {
   let roundOver = false;
   if (
@@ -377,6 +382,7 @@ function handleHandWinner(player) {
   player.balance += pot;
   pot = 0;
   updatePlayerTextContent;
+  revealPlayer2Cards();
 }
 
 function showCommunityCards() {
@@ -448,6 +454,7 @@ function changeToAct() {
 function roundOver() {
   if (checkHandOver()) {
     handleWinner();
+    revealPlayer2Cards();
   }
   player1.status = "None";
   player2.status = "None";
