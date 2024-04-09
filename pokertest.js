@@ -109,10 +109,10 @@ function checkRoundOver() {
   if (
     (player1.status === "Call" &&
       player2.status === "Raise" &&
-      betAmount === 0) ||
+      amountToCall === 0) ||
     (player2.status === "Call" &&
       player1.status === "Raise" &&
-      betAmount === 0) ||
+      amountToCall === 0) ||
     (player1.status === "Call" && player2.status === "Check") ||
     (player2.status === "Call" && player1.status === "Check") ||
     (player1.status === "Check" && player2.status === "Check")
@@ -193,7 +193,9 @@ function updatePot(amount) {
   pot += amount;
 }
 
-function updateAmountToCall() {}
+function updateAmountToCall() {
+  amountToCall = Math.abs(player1.roundBet - player2.roundBet);
+}
 
 function updateAllBalances() {
   player1balance.innerHTML = player1.balance;
@@ -364,7 +366,7 @@ function handleRaise(betAmount) {
   updateRoundTotal(betAmount);
   updateBalance(betAmount);
   updatePot(betAmount);
-  updateAmountToCall();
+  updateAmountToCall(betAmount);
   updatePlayerTextContent();
   //need to include when raise not enough
 }
