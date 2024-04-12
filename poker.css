@@ -1,8 +1,12 @@
 .table {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
+  grid-template-rows: repeat(3, 100px); /* 3 rows with height of 100px */
+  grid-gap: 10px;
   position: absolute;
-  width: 50%;
-  height: 60%;
-  background-color: rgb(8, 215, 43);
+  width: 80%;
+  height: 80%;
+  background-color: rgb(240, 215, 240);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -36,7 +40,7 @@
   justify-content: space-around;
 }
 
-#deal-button {
+#betting-buttons {
   position: absolute;
   bottom: 10px; /* Adjust as needed to control vertical position */
   right: 10px; /* Adjust as needed to control horizontal position */

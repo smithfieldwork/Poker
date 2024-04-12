@@ -64,23 +64,63 @@ let numberOfChecks = 0;
 let handComplete = false;
 let gameHasStarted = false;
 
+const cardsUsed = []; // Initialize an array to keep track of used cards
+
+function addToFirstEmptySlot(arr, element) {
+  if (arr.length === 0) {
+    // Check if the array is empty
+    arr.push(element); // If it's empty, add the element
+    return; // Exit the function
+  }
+
+  for (let i = 0; i <= arr.length; i++) {
+    if (arr[i] === undefined) {
+      arr[i] = element;
+      return;
+    }
+  }
+}
+
+let testArr = [];
+
+function isCardUsed(cardNumber) {
+  return cardsUsed.includes(cardNumber);
+}
+
+function pickNextCard() {
+  let cardPicked = false;
+  let card;
+  while (!cardPicked) {
+    let newCard = getRandomInt(0, 51);
+    console.log(newCard);
+    if (!isCardUsed(newCard)) {
+      card = newCard;
+      addToFirstEmptySlot(cardsUsed, card);
+
+      cardPicked = true;
+    }
+  }
+  return card;
+}
+
+function dealPlayerHand(playerArray) {
+  playerArray[0] = pickNextCard();
+  playerArray[1] = pickNextCard();
+}
+
+// Function to get random integer between min (inclusive) and max (inclusive)
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function dealPlayerHand(playerArray) {
-  playerArray[0] = getRandomInt(0, 51);
-  playerArray[1] = getRandomInt(0, 51);
-}
-
 function dealCommunityCards() {
-  communityCards[0] = getRandomInt(0, 51);
-  communityCards[1] = getRandomInt(0, 51);
-  communityCards[2] = getRandomInt(0, 51);
-  communityCards[3] = getRandomInt(0, 51);
-  communityCards[4] = getRandomInt(0, 51);
+  communityCards[0] = pickNextCard();
+  communityCards[1] = pickNextCard();
+  communityCards[2] = pickNextCard();
+  communityCards[3] = pickNextCard();
+  communityCards[4] = pickNextCard();
 }
 
 function hideCommunityCards() {
@@ -273,6 +313,7 @@ function handleBlinds() {
 function newHand() {
   communityCardsShown = 0;
   gameHasStarted = true;
+  testArr = [];
   dealHands();
   setUpCommunityCards();
   handleDealerSetup();

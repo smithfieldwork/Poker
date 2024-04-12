@@ -1,0 +1,19 @@
+.table {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
+  grid-gap: 10px; /* Gap between grid items */
+  grid-template-rows: 50px 400px auto;
+}
+.cardImages {
+  height: 60px;
+}
+
+#community--cards {
+  padding-top: 120px;
+  display: flex; /* Add flex display to the table container */
+  justify-content: space-around;
+}
+
+.hidden {
+  display: none;
+}
