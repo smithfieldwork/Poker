@@ -361,15 +361,11 @@ btnNextHand.addEventListener("click", function () {
 
 function updatePlayerTurn() {
   if (player1.toAct === true) {
-    playerActing = player1;
-    playerNotActing = player2;
     player1YourTurn.innerHTML = "Your Turn";
     player2YourTurn.innerHTML = "<br>";
   } else if (player2.toAct === true) {
     player2YourTurn.innerHTML = "Your Turn";
     player1YourTurn.innerHTML = "<br>";
-    playerActing = player1;
-    playerNotActing = player2;
   }
 }
 
@@ -475,8 +471,14 @@ function showRiverCard() {
 function setToAct() {
   if (player1.dealing === true) {
     player2.toAct = true;
+    playerActing = player2;
+    player1.toAct = false;
+    playerNotActing = player1;
   } else if (player2.dealing === true) {
     player1.toAct = true;
+    playerActing = player1;
+    player2.toAct = false;
+    playerNotActing = player2;
   }
 }
 
