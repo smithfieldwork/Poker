@@ -296,8 +296,12 @@ function handleDealerSetup() {
   showDealer();
   if (checkIsFirstHand()) {
     setToAct();
-  } else {
-    changeToAct();
+  } else if ((player1.dealer = true)) {
+    player2.toAct = true;
+    player1.toAct = false;
+  } else if ((player2.dealer = true)) {
+    player1.toAct = true;
+    player2.toAct = false;
   }
   updatePlayerTurn();
 }
@@ -357,11 +361,15 @@ btnNextHand.addEventListener("click", function () {
 
 function updatePlayerTurn() {
   if (player1.toAct === true) {
+    playerActing = player1;
+    playerNotActing = player2;
     player1YourTurn.innerHTML = "Your Turn";
     player2YourTurn.innerHTML = "<br>";
   } else if (player2.toAct === true) {
     player2YourTurn.innerHTML = "Your Turn";
     player1YourTurn.innerHTML = "<br>";
+    playerActing = player1;
+    playerNotActing = player2;
   }
 }
 
