@@ -294,15 +294,7 @@ function dealHands() {
 function handleDealerSetup() {
   setDealer();
   showDealer();
-  if (checkIsFirstHand()) {
-    setToAct();
-  } else if ((player1.dealer = true)) {
-    player2.toAct = true;
-    player1.toAct = false;
-  } else if ((player2.dealer = true)) {
-    player1.toAct = true;
-    player2.toAct = false;
-  }
+  setToAct();
   updatePlayerTurn();
 }
 
