@@ -17,3 +17,52 @@
 .hidden {
   display: none;
 }
+
+#top-middle {
+  display: flex; /* Use flexbox to align items horizontally */
+  justify-content: space-around; /* Add space between the two containers */
+}
+
+.info-container {
+  text-align: center; /* Center-align the text within each container */
+}
+
+body {
+  background-color: hsl(180, 53%, 80%); /* HSL color value for light blue */
+}
+
+/* Styling for buttons */
+/* Styling for buttons */
+button {
+  background-color: #001f3f; /* Dark blue */
+  border: white;
+  color: white;
+  padding: 15px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 20px;
+  border-bottom: white;
+}
+
+button:hover {
+  background-color: #003366; /* Darker blue on hover */
+}
+
+/* Styling for text input */
+input[type="text"] {
+  width: 50%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 16px;
+}
+
+input[type="text"]:focus {
+  border: 3px solid #555;
+}
