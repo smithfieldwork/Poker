@@ -316,7 +316,11 @@ function newHand() {
   testArr = [];
   dealHands();
   setUpCommunityCards();
+  console.log(player1.dealing);
+  console.log(player2.dealing);
   handleDealerSetup();
+  console.log(player1.dealing);
+  console.log(player2.dealing);
   handleBlinds();
   updatePlayerTextContent();
 }
@@ -327,10 +331,6 @@ function resetHandVariables() {
   player2.latestBet = 0;
   player1.roundBet = 0;
   player2.roundBet = 0;
-  player1.dealing = false;
-  player1.toAct = false;
-  player2.dealing = false;
-  player2.toAct = false;
   communityCardsShown = 0;
   handComplete = false;
 }
