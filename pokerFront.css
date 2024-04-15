@@ -18,6 +18,10 @@
   display: none;
 }
 
+.always-hide {
+  display: none;
+}
+
 #top-middle {
   display: flex; /* Use flexbox to align items horizontally */
   justify-content: space-around; /* Add space between the two containers */

@@ -358,10 +358,10 @@ btnNextHand.addEventListener("click", function () {
 function updatePlayerTurn() {
   if (player1.toAct === true) {
     player1YourTurn.innerHTML = "Your Turn";
-    player2YourTurn.innerHTML = " ";
+    player2YourTurn.innerHTML = "<br>";
   } else if (player2.toAct === true) {
     player2YourTurn.innerHTML = "Your Turn";
-    player1YourTurn.innerHTML = " ";
+    player1YourTurn.innerHTML = "<br>";
   }
 }
 
