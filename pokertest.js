@@ -1073,6 +1073,94 @@ function getBestHand(playersHand) {
   return bestHand;
 }
 
+//player 2 actions
+
+function player2actions(callPercentage, foldPercentage) {
+  const randomNum = Math.random();
+  let action = "";
+  if (randomNum < foldPercentage) {
+    action = "fold";
+  } else if (
+    randomNum >= foldPercentage &&
+    randomNum < callPercentage &&
+    betAmount != 0
+  ) {
+    action = "call";
+  } else if (
+    randomNum >= foldPercentage &&
+    randomNum < callPercentage &&
+    betAmount === 0
+  ) {
+    action = "check";
+  } else if (randomNum >= callPercentage) {
+    action = "raise";
+  }
+
+  return action;
+}
+
+function setActionPercentages(handRank) {
+  let callPercentage = -1;
+  let foldPercentage = -1;
+  let raiseValue = -1;
+
+  switch (handRank) {
+    case 0:
+      foldPercentage = 0.8;
+      callPercentage = 0.95;
+      raiseValue = 0.5 * potAmount;
+      break;
+    case 1:
+      foldPercentage = 0.5;
+      callPercentage = 0.85;
+      raiseValue = 0.75 * potAmount;
+      break;
+    case 2:
+      foldPercentage = 0.1;
+      callPercentage = 0.8;
+      raiseValue = 0.75 * potAmount;
+      break;
+
+    case 3:
+      foldPercentage = 0.05;
+      callPercentage = 0.5;
+      raiseValue = potAmount;
+      break;
+
+    case 4:
+      foldPercentage = 0.02;
+      callPercentage = 0.3;
+      raiseValue = potAmount;
+      break;
+
+    case 5:
+      foldPercentage = 0.01;
+      callPercentage = 0.1;
+      raiseValue = potAmount;
+      break;
+
+    case 6:
+      foldPercentage = 0;
+      callPercentage = 0.05;
+      raiseValue = potAmount;
+      break;
+
+    case 7:
+      foldPercentage = 0;
+      callPercentage = 0.05;
+      raiseValue = potAmount;
+
+      break;
+
+    case 8:
+      foldPercentage = 0;
+      callPercentage = 0.05;
+      raiseValue = potAmount;
+      break;
+  }
+  const betValues = [foldPercentage, callPercentage, potAmount];
+  return betValues;
+}
 // Need to test these checks
 communityCards = [51, 50, 1, 2, 3];
 //let trialHandTwo = [27, 28, 40, 41, 50];
